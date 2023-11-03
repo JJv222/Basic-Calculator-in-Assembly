@@ -1,0 +1,162 @@
+    LJMP START
+    ORG 100H
+START:
+    MOV R5,#2               ; liczba liczb 2-u cyfrowych 
+WPROWADZ_LICZBY:
+    LCALL LCD_CLR
+
+    LCALL WAIT_KEY
+    MOV R1,A
+    MOV B,#10
+    MUL AB
+    MOV R0,A
+    MOV A,R1
+    SWAP A
+    MOV R1,A
+
+
+    LCALL WAIT_KEY
+    PUSH ACC
+    ADD A,R1
+    MOV R1,A
+    LCALL WRITE_HEX
+    POP ACC
+    ADD A,R0
+    PUSH ACC
+    PUSH 01
+
+
+    LCALL WAIT_ENTER
+    DJNZ R5,WPROWADZ_LICZBY 
+    
+
+    ;*********************************struktura stosu****************************
+    ; liczba1_operayjna/liczba1_wyswietlenie/liczba2_operayjna/liczba2_wyswietlenie/
+    
+
+                            ;wybor dzialania 
+    LCALL LCD_CLR
+    LCALL WAIT_KEY
+    ;********************************ADDITION*************************************************
+    CJNE A,#10,Subtraction
+    POP 01          ;R1-wys_liczba2
+    POP B           ;B-artm_liczba2
+    POP ACC         ; A-wys_liczba1
+    LCALL WRITE_HEX
+    MOV A,#'+'
+    LCALL WRITE_DATA
+    MOV A,R1
+    LCALL WRITE_HEX
+    MOV A,#'='
+    LCALL WRITE_DATA
+
+    POP ACC ;artm_liczba1
+    ADD A,B ; suma artm1 i artm2
+    
+    ;******************************wyswietlanie wyniku 0-99
+    MOV B,#10
+    DIV AB
+    SWAP A
+    ADD A,B
+    LCALL WRITE_HEX
+    SJMP $
+    ;********************************SUBSTRACTION*************************************************
+Subtraction:
+    CJNE A,#11,Multiplication
+    POP 01          ;R1-wys_liczba2
+    POP B           ;B-artm_liczba2
+    POP ACC         ; A-wys_liczba1
+    LCALL WRITE_HEX
+
+    MOV A,#'-'
+    LCALL WRITE_DATA
+    MOV A,R1
+    LCALL WRITE_HEX
+    MOV A,#'='
+    LCALL WRITE_DATA
+
+    POP ACC         ;A-artm1
+    CLR C
+    SUBB A,B
+    PUSH ACC
+    ;*********************sprawadz czy lizba ma minus
+    MOV R1,#128
+    ANL A,R1
+    CJNE A,#128,PLUS       ;jesli tak to dzialania na minusie jak nie to na plusie
+    MOV A,#'-'
+    LCALL WRITE_DATA
+    ;***********************zamien liczbe na minusie na wartość bezględną
+    POP ACC
+    CPL A
+    MOV B,#1
+    ADD A,B
+    PUSH ACC
+PLUS:       ;******************************wyswietlanie wyniku 0-99 z '-' lub bez
+    MOV B,#10
+    POP ACC
+    DIV AB
+    SWAP A
+    ADD A,B
+    LCALL WRITE_HEX
+    SJMP $
+;********************************MULLTIPLICATE*****************************************************
+Multiplication:
+    CJNE A,#12,Division
+    POP 01          ;R1-wys_liczba2
+    POP B           ;B-artm_liczba2
+    POP ACC         ; A-wys_liczba1
+
+    LCALL WRITE_HEX
+    MOV A,#'*'
+    LCALL WRITE_DATA
+    MOV A,R1
+    LCALL WRITE_HEX
+    MOV A,#'='
+    LCALL WRITE_DATA
+
+    POP ACC         ;A-artm1
+    MUL AB
+    ;******************************wyswietlanie wyniku 0-99
+    MOV B,#10
+    DIV AB
+    SWAP A
+    ADD A,B
+    LCALL WRITE_HEX
+    SJMP $
+;********************************DIVIDE**************************************
+Division:
+    POP 01          ;R1-wys_liczba2
+    POP B           ;B-artm_liczba2
+    POP ACC         ; A-wys_liczba1
+    LCALL WRITE_HEX
+
+    MOV A,#'/'
+    LCALL WRITE_DATA
+    MOV A,R1
+    LCALL WRITE_HEX
+    MOV A,#'='
+    LCALL WRITE_DATA
+
+    POP ACC         ;A-artm1
+    DIV AB
+    PUSH B
+    ;******************************wyswietlanie wyniku 0-99
+    MOV B,#10
+    DIV AB
+    SWAP A
+    ADD A,B
+    LCALL WRITE_HEX
+    ;******************************wyswietlanie reszty
+    MOV A,#'r'
+    LCALL WRITE_DATA 
+    POP ACC
+    ;******************************wyswietlanie reszty 'r(0-99)'    
+    MOV B,#10
+    DIV AB
+    SWAP A
+    ADD A,B
+    LCALL WRITE_HEX
+
+
+    SJMP $
+    NOP

@@ -1,0 +1,162 @@
+     1  0000: 02 01 00      LJMP START
+     2  0100:               ORG 100H
+     3  0100:           START:
+     4  0100: 7D 02         MOV R5,#2               ; liczba liczb 2-u cyfrowych 
+     5  0102:           WPROWADZ_LICZBY:
+     6  0102: 12 81 0C      LCALL LCD_CLR
+     7                  
+     8  0105: 12 81 1C      LCALL WAIT_KEY
+     9  0108: F9            MOV R1,A
+    10  0109: 75 F0 0A      MOV B,#10
+    11  010C: A4            MUL AB
+    12  010D: F8            MOV R0,A
+    13  010E: E9            MOV A,R1
+    14  010F: C4            SWAP A
+    15  0110: F9            MOV R1,A
+    16                  
+    17                  
+    18  0111: 12 81 1C      LCALL WAIT_KEY
+    19  0114: C0 E0         PUSH ACC
+    20  0116: 29            ADD A,R1
+    21  0117: F9            MOV R1,A
+    22  0118: 12 81 04      LCALL WRITE_HEX
+    23  011B: D0 E0         POP ACC
+    24  011D: 28            ADD A,R0
+    25  011E: C0 E0         PUSH ACC
+    26  0120: C0 01         PUSH 01
+    27                  
+    28                  
+    29  0122: 12 81 14      LCALL WAIT_ENTER
+    30  0125: DD DB         DJNZ R5,WPROWADZ_LICZBY 
+    31                      
+    32                  
+    33                      ;*********************************struktura stosu****************************
+    34                      ; liczba1_operayjna/liczba1_wyswietlenie/liczba2_operayjna/liczba2_wyswietlenie/
+    35                      
+    36                  
+    37                                              ;wybor dzialania 
+    38  0127: 12 81 0C      LCALL LCD_CLR
+    39  012A: 12 81 1C      LCALL WAIT_KEY
+    40                      ;********************************ADDITION*************************************************
+    41  012D: B4 0A 27      CJNE A,#10,Subtraction
+    42  0130: D0 01         POP 01          ;R1-wys_liczba2
+    43  0132: D0 F0         POP B           ;B-artm_liczba2
+    44  0134: D0 E0         POP ACC         ; A-wys_liczba1
+    45  0136: 12 81 04      LCALL WRITE_HEX
+    46  0139: 74 2B         MOV A,#'+'
+    47  013B: 12 81 02      LCALL WRITE_DATA
+    48  013E: E9            MOV A,R1
+    49  013F: 12 81 04      LCALL WRITE_HEX
+    50  0142: 74 3D         MOV A,#'='
+    51  0144: 12 81 02      LCALL WRITE_DATA
+    52                  
+    53  0147: D0 E0         POP ACC ;artm_liczba1
+    54  0149: 25 F0         ADD A,B ; suma artm1 i artm2
+    55                      
+    56                      ;******************************wyswietlanie wyniku 0-99
+    57  014B: 75 F0 0A      MOV B,#10
+    58  014E: 84            DIV AB
+    59  014F: C4            SWAP A
+    60  0150: 25 F0         ADD A,B
+    61  0152: 12 81 04      LCALL WRITE_HEX
+    62  0155: 80 FE         SJMP $
+    63                      ;********************************SUBSTRACTION*************************************************
+    64  0157:           Subtraction:
+    65  0157: B4 0B 41      CJNE A,#11,Multiplication
+    66  015A: D0 01         POP 01          ;R1-wys_liczba2
+    67  015C: D0 F0         POP B           ;B-artm_liczba2
+    68  015E: D0 E0         POP ACC         ; A-wys_liczba1
+    69  0160: 12 81 04      LCALL WRITE_HEX
+    70                  
+    71  0163: 74 2D         MOV A,#'-'
+    72  0165: 12 81 02      LCALL WRITE_DATA
+    73  0168: E9            MOV A,R1
+    74  0169: 12 81 04      LCALL WRITE_HEX
+    75  016C: 74 3D         MOV A,#'='
+    76  016E: 12 81 02      LCALL WRITE_DATA
+    77                  
+    78  0171: D0 E0         POP ACC         ;A-artm1
+    79  0173: C3            CLR C
+    80  0174: 95 F0         SUBB A,B
+    81  0176: C0 E0         PUSH ACC
+    82                      ;*********************sprawadz czy lizba ma minus
+    83  0178: 79 80         MOV R1,#128
+    84  017A: 59            ANL A,R1
+    85  017B: B4 80 0F      CJNE A,#128,PLUS       ;jesli tak to dzialania na minusie jak nie to na plusie
+    86  017E: 74 2D         MOV A,#'-'
+    87  0180: 12 81 02      LCALL WRITE_DATA
+    88                      ;***********************zamien liczbe na minusie na wartość bezględną
+    89  0183: D0 E0         POP ACC
+    90  0185: F4            CPL A
+    91  0186: 75 F0 01      MOV B,#1
+    92  0189: 25 F0         ADD A,B
+    93  018B: C0 E0         PUSH ACC
+    94  018D:           PLUS:       ;******************************wyswietlanie wyniku 0-99 z '-' lub bez
+    95  018D: 75 F0 0A      MOV B,#10
+    96  0190: D0 E0         POP ACC
+    97  0192: 84            DIV AB
+    98  0193: C4            SWAP A
+    99  0194: 25 F0         ADD A,B
+   100  0196: 12 81 04      LCALL WRITE_HEX
+   101  0199: 80 FE         SJMP $
+   102                  ;********************************MULLTIPLICATE*****************************************************
+   103  019B:           Multiplication:
+   104  019B: B4 0C 26      CJNE A,#12,Division
+   105  019E: D0 01         POP 01          ;R1-wys_liczba2
+   106  01A0: D0 F0         POP B           ;B-artm_liczba2
+   107  01A2: D0 E0         POP ACC         ; A-wys_liczba1
+   108                  
+   109  01A4: 12 81 04      LCALL WRITE_HEX
+   110  01A7: 74 2A         MOV A,#'*'
+   111  01A9: 12 81 02      LCALL WRITE_DATA
+   112  01AC: E9            MOV A,R1
+   113  01AD: 12 81 04      LCALL WRITE_HEX
+   114  01B0: 74 3D         MOV A,#'='
+   115  01B2: 12 81 02      LCALL WRITE_DATA
+   116                  
+   117  01B5: D0 E0         POP ACC         ;A-artm1
+   118  01B7: A4            MUL AB
+   119                      ;******************************wyswietlanie wyniku 0-99
+   120  01B8: 75 F0 0A      MOV B,#10
+   121  01BB: 84            DIV AB
+   122  01BC: C4            SWAP A
+   123  01BD: 25 F0         ADD A,B
+   124  01BF: 12 81 04      LCALL WRITE_HEX
+   125  01C2: 80 FE         SJMP $
+   126                  ;********************************DIVIDE**************************************
+   127  01C4:           Division:
+   128  01C4: D0 01         POP 01          ;R1-wys_liczba2
+   129  01C6: D0 F0         POP B           ;B-artm_liczba2
+   130  01C8: D0 E0         POP ACC         ; A-wys_liczba1
+   131  01CA: 12 81 04      LCALL WRITE_HEX
+   132                  
+   133  01CD: 74 2F         MOV A,#'/'
+   134  01CF: 12 81 02      LCALL WRITE_DATA
+   135  01D2: E9            MOV A,R1
+   136  01D3: 12 81 04      LCALL WRITE_HEX
+   137  01D6: 74 3D         MOV A,#'='
+   138  01D8: 12 81 02      LCALL WRITE_DATA
+   139                  
+   140  01DB: D0 E0         POP ACC         ;A-artm1
+   141  01DD: 84            DIV AB
+   142  01DE: C0 F0         PUSH B
+   143                      ;******************************wyswietlanie wyniku 0-99
+   144  01E0: 75 F0 0A      MOV B,#10
+   145  01E3: 84            DIV AB
+   146  01E4: C4            SWAP A
+   147  01E5: 25 F0         ADD A,B
+   148  01E7: 12 81 04      LCALL WRITE_HEX
+   149                      ;******************************wyswietlanie reszty
+   150  01EA: 74 72         MOV A,#'r'
+   151  01EC: 12 81 02      LCALL WRITE_DATA 
+   152  01EF: D0 E0         POP ACC
+   153                      ;******************************wyswietlanie reszty 'r(0-99)'    
+   154  01F1: 75 F0 0A      MOV B,#10
+   155  01F4: 84            DIV AB
+   156  01F5: C4            SWAP A
+   157  01F6: 25 F0         ADD A,B
+   158  01F8: 12 81 04      LCALL WRITE_HEX
+   159                  
+   160                  
+   161  01FB: 80 FE         SJMP $
+   162  01FD: 00            NOP
