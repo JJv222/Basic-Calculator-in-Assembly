@@ -1,5 +1,5 @@
 # Basic-Calculator-in-Assembly
-Ten projekt to prosty kalkulator zaprojektowany dla mikrokontrolera 8051.<br>
+Ten projekt to prosty kalkulator zaprojektowany dla mikrokontrolera 8051.<br>Zakres liczb wyświetlanych to 0-99 i dotyczy to liczb wprowadzanych jak i wyniku.<br>
 Pierw należy podać dwie cyfry BCD(0-9), po każdej parze nacisnąć klawisz enter(F) aby zaakceptować podaną liczbę dwucyfrową.<br>
 ![Zrzut ekranu 2023-11-03 173222](https://github.com/JJv222/Basic-Calculator-in-Assembly/assets/118291038/d096a6d2-6e5e-48c3-9224-a763d646196f)
 ![Zrzut ekranu 2023-11-03 173250](https://github.com/JJv222/Basic-Calculator-in-Assembly/assets/118291038/daf2a068-8dab-4a05-9c9c-3fbed3fbd5eb) <br>
